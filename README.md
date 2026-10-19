@@ -1,58 +1,191 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+﻿# metCasa — Real Estate Platform
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**A full-stack real estate application built with Nuxt and Laravel.**
 
-## About Laravel
+metCasa helps people explore properties for sale or rent in Iași and nearby areas. Visitors can search and filter listings, browse property photos and details, and contact owners. Registered users can save favorite properties and manage their profiles, while administrators maintain the property catalog.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This repository contains the **Laravel REST API**. It powers authentication, access control, property listings, favorites, notifications, and image storage for the separately maintained **Nuxt frontend**.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**[Frontend repository](https://github.com/biancabojescu/metcasa)** · **[Backend repository](https://github.com/biancabojescu/metcasa-api)**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Features
 
-## Learning Laravel
+- **Property listings:** provide filtered and paginated property data for sale and rental listings, with property details and active/inactive statuses.
+- **Account management:** registration, login, logout, email verification, password recovery, and profile updates.
+- **Authentication and permissions:** Laravel Sanctum bearer tokens and role-based authorization using Spatie Laravel Permission.
+- **Favorites:** save, list, and remove properties associated with an authenticated account.
+- **Listing administration:** protected operations to create, update, archive, and delete properties.
+- **Image management:** accept image uploads, preserve selected existing images on edits, and remove files no longer attached to a listing.
+- **Email notifications:** support account verification and password reset messages.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Tech Stack
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+| Backend (this repository) | Frontend (separate repository) |
+| --- | --- |
+| PHP 8.3+, Laravel 13 | Nuxt 4, Vue 3, TypeScript |
+| Laravel Sanctum, Spatie Permission | Pinia, Nuxt UI, Tailwind CSS |
+| Eloquent ORM, MySQL | pnpm, API composables |
+| Laravel filesystem, Mail, PHPUnit | Client-side routing and state management |
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Technical Highlights
 
-## Agentic Development
+### REST API with separated responsibilities
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+The Laravel backend organizes endpoints, business operations, and data access around controllers, services, repositories, and Eloquent models. The Nuxt frontend communicates with the API under `/api/v1`, keeping user-interface concerns separate from persistence and authorization.
 
-```bash
-composer require laravel/boost --dev
+### Authentication and role-based access
 
-php artisan boost:install
+The API provides token-based authentication with Laravel Sanctum. Protected operations are authorized on the backend using roles and permissions, independently of any navigation guards in the frontend. The account flows also support email verification and password recovery.
+
+### Server-side property filtering and pagination
+
+Property search is processed by the API instead of downloading the full catalog into the browser. The frontend sends filter, sorting, and pagination parameters, and the backend returns the corresponding page and metadata for navigation.
+
+### Favorites and listing availability
+
+Favorites are linked to authenticated users. The API exposes favorite identifiers separately from paginated active listing details, allowing the frontend to display saved states without loading every favorited property at once.
+
+### Property image lifecycle
+
+Listing forms submit multipart requests. During edits, the API distinguishes retained images (`keep_images[]`) from newly uploaded files (`new_images[]`), updates the stored image list, and removes discarded media from storage.
+
+## Architecture
+
+The application consists of a client-rendered Nuxt frontend and a standalone Laravel API responsible for data, access control, and media.
+
+```mermaid
+flowchart LR
+    User[Visitor / Administrator] --> UI[Nuxt Frontend]
+    UI -->|JSON / Multipart + Bearer Token| API[Laravel REST API /api/v1]
+    API --> Auth[Sanctum + Permissions]
+    API --> Logic[Controllers / Services / Repositories]
+    Logic --> DB[(MySQL)]
+    Logic --> Files[Public File Storage]
+    API --> Mail[Email Notifications]
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Main backend directories:
 
-## Contributing
+- `routes/` — API route definitions.
+- `app/` — controllers, models, authorization, and application logic.
+- `database/migrations/` — relational database schema.
+- `database/seeders/` — initial data, including roles and permissions.
+- `config/` — application, authentication, database, filesystem, mail, and CORS configuration.
+- `tests/` — Laravel/PHPUnit tests.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Getting Started
 
-## Code of Conduct
+You'll need **PHP 8.3+**, **Composer**, **MySQL**, and Git. For the full application, run the [Nuxt frontend](https://github.com/biancabojescu/metcasa) separately.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 1. Set up the backend
 
-## Security Vulnerabilities
+```bash
+git clone https://github.com/biancabojescu/metcasa-api.git
+cd metcasa-api
+composer install
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Copy `.env.example` to `.env` and create a local MySQL database. Configure values for your environment:
 
-## License
+```dotenv
+APP_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:3001
+FRONTEND_ORIGINS=http://localhost:3001,http://127.0.0.1:3001
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=metcasa_api
+DB_USERNAME=your_database_user
+DB_PASSWORD=your_database_password
+
+MAIL_MAILER=log
+```
+
+Generate the application key, create the database tables, seed roles, and expose public media:
+
+```bash
+php artisan key:generate
+php artisan migrate
+php artisan db:seed --class=RolesAndPermissionsSeeder
+php artisan storage:link
+php artisan serve --host=localhost --port=8000
+```
+
+The API is available at **http://localhost:8000**, with application endpoints under `/api/v1`.
+
+<details>
+<summary><strong>Connect the Nuxt frontend</strong></summary>
+
+Clone the separate frontend repository:
+
+```bash
+git clone https://github.com/biancabojescu/metcasa.git
+cd metcasa
+pnpm install
+```
+
+Copy its `.env.example` to `.env` and configure:
+
+```dotenv
+API_URL=http://localhost:8000/api/v1
+BASE_URL=http://localhost:3001
+```
+
+Then run:
+
+```bash
+pnpm dev
+```
+
+Open **http://localhost:3001**. The backend's `FRONTEND_ORIGINS` must include this origin, and `FRONTEND_URL` must point to it for account email links.
+
+</details>
+
+<details>
+<summary><strong>Enable the administration dashboard locally</strong></summary>
+
+New accounts are not assigned the `super admin` role automatically. After registering a test account, run:
+
+```bash
+php artisan tinker
+```
+
+```php
+$user = App\Models\User::where('email', 'developer@example.com')->firstOrFail();
+$user->assignRole('super admin');
+```
+
+Replace the example email with your local test account. Log out and back in to refresh the frontend's role data.
+
+With `MAIL_MAILER=log`, local email verification and password reset messages are written to `storage/logs/laravel.log` rather than sent externally.
+
+</details>
+
+## API Overview
+
+The Nuxt frontend consumes API endpoints for:
+
+| Area | Example operations |
+| --- | --- |
+| Listings | `GET /listings`, `GET /listings/{id}`, `POST /listings`, `POST /listings/{id}`, `DELETE /listings/{id}` |
+| Authentication | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout` |
+| Profile | `POST /auth/profile` |
+| Email and passwords | `POST /auth/email/resend`, `POST /auth/password/forgot`, `POST /auth/password/reset` |
+| Favorites | `GET /favorites`, `POST /favorites/{id}`, `DELETE /favorites/{id}`, `DELETE /favorites` |
+
+Paths in this table are relative to `/api/v1`. Protected requests use a bearer token.
+
+## Development Checks
+
+The backend includes PHPUnit and a Composer test script:
+
+```bash
+composer test
+```
+
+The presence of a test runner does not imply that every application workflow has automated coverage. In particular, authentication, listing permissions, filters, favorites, and uploads should be covered by dedicated integration tests.
+
+## Current Limitations
+
+metCasa is a portfolio project, not a production-hardened real estate service. Before production use, priorities include stronger automated test coverage, explicit email-verification enforcement where required, and reviewing how inactive listing records are exposed through public endpoints. Token lifetime and session policies also need review alongside the frontend's storage approach.
