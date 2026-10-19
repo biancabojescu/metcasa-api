@@ -176,16 +176,6 @@ The Nuxt frontend consumes API endpoints for:
 
 Paths in this table are relative to `/api/v1`. Protected requests use a bearer token.
 
-## Development Checks
-
-The backend includes PHPUnit and a Composer test script:
-
-```bash
-composer test
-```
-
-The presence of a test runner does not imply that every application workflow has automated coverage. In particular, authentication, listing permissions, filters, favorites, and uploads should be covered by dedicated integration tests.
-
 ## Current Limitations
 
 metCasa is a portfolio project, not a production-hardened real estate service. Before production use, priorities include stronger automated test coverage, explicit email-verification enforcement where required, and reviewing how inactive listing records are exposed through public endpoints. Token lifetime and session policies also need review alongside the frontend's storage approach.
